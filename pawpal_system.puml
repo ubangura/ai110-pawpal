@@ -1,0 +1,57 @@
+@startuml PawPal+
+
+class Owner {
+  - name: str
+  - constraints: Constraints
+  - preferences: Preferences
+  - pets: list[Pet]
+  - tasks: list[Task]
+  + add_pet(pet: Pet): void
+  + add_task(task: Task): void
+}
+
+class Constraints <<dataclass>> {
+  + time_available_hours: float
+  + max_tasks: int
+}
+
+class Preferences <<dataclass>> {
+  + group_tasks_by_pet: bool = False
+}
+
+class Pet <<dataclass>> {
+  + name: str
+  + species: str
+  + age: int
+  + health_conditions: bool
+}
+
+class Task <<dataclass>> {
+  + name: str
+  + pet: Pet
+  + duration_hours: float
+  + priority: int
+  + description: str
+}
+
+class Scheduler {
+  + schedule(owner: Owner): Schedule
+}
+
+class Schedule {
+  - scheduled_tasks: list[Task]
+  - total_duration_hours: float
+  - reasoning: str
+  + display(): void
+}
+
+Owner "1" *-- "1" Constraints : has
+Owner "1" *-- "1" Preferences : has
+Owner "1" --> "0..*" Pet : owns
+Owner "1" --> "0..*" Task : manages
+Task "0..*" --> "1" Pet : for
+Schedule "1" --> "0..*" Task : contains
+Scheduler ..> Schedule : creates
+Scheduler ..> Owner : reads from
+
+@enduml
