@@ -41,3 +41,14 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+## Smarter Scheduling
+
+The scheduler goes beyond basic task listing with several features:
+
+- **Priority-based filtering** — tasks are sorted by priority (1 = highest) and fitted into the owner's time budget. Tasks that don't fit are dropped and reported.
+- **Preferred times** — each task can have an optional `preferred_time` (HH:MM format). The schedule is sorted chronologically so the daily plan reads like a timeline.
+- **Conflict detection** — if two or more tasks share the same preferred time, the scheduler flags them with a warning in the reasoning output.
+- **Group by pet** — an optional preference that clusters tasks for the same pet together in the schedule.
+- **Recurring tasks** — tasks can be set to `DAILY` or `WEEKLY` frequency. When marked complete, `mark_complete()` returns a new task instance with the next due date calculated via `timedelta`.
+- **Explainable output** — every schedule includes a reasoning summary: what was scheduled, what was dropped and why, whether grouping was applied, and any detected conflicts.
