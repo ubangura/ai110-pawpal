@@ -1,5 +1,11 @@
 @startuml PawPal+
 
+enum Frequency {
+  ONCE
+  DAILY
+  WEEKLY
+}
+
 class Owner {
   - name: str
   - constraints: Constraints
@@ -32,9 +38,21 @@ class Task <<dataclass>> {
   + duration_hours: float
   + priority: int
   + description: str
+  + preferred_time: str
+  + frequency: Frequency
+  + due_date: date | None
+  + completed: bool
+  + mark_complete(): Task | None
 }
 
 class Scheduler {
+  + sort_by_time(tasks: list[Task]): list[Task]
+  + filter_completed_tasks(tasks: list[Task]): list[Task]
+  + filter_tasks_by_pet(tasks: list[Task], pet_name: str): list[Task]
+  + detect_conflicts(tasks: list[Task]): list[str]
+  + fit_to_budget(tasks: list[Task], time_available_hours: float): tuple
+  + apply_ordering(tasks: list[Task], preferences: Preferences): list[Task]
+  + build_reasoning(owner: Owner, scheduled: list[Task], dropped: list[Task], total: float): str
   + schedule(owner: Owner): Schedule
 }
 
@@ -50,6 +68,7 @@ Owner "1" *-- "1" Preferences : has
 Owner "1" --> "0..*" Pet : owns
 Owner "1" --> "0..*" Task : manages
 Task "0..*" --> "1" Pet : for
+Task --> Frequency : uses
 Schedule "1" --> "0..*" Task : contains
 Scheduler ..> Schedule : creates
 Scheduler ..> Owner : reads from

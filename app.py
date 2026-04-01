@@ -6,29 +6,7 @@ st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 st.title("🐾 PawPal+")
 
 st.markdown("""
-Welcome to the PawPal+ starter app.
-
-This file is intentionally thin. It gives you a working Streamlit app so you can start quickly,
-but **it does not implement the project logic**. Your job is to design the system and build it.
-
-Use this app as your interactive demo once your backend classes/functions exist.
-""")
-
-with st.expander("Scenario", expanded=True):
-    st.markdown("""
-**PawPal+** is a pet care planning assistant. It helps a pet owner plan care tasks
-for their pet(s) based on constraints like time, priority, and preferences.
-
-You will design and implement the scheduling logic and connect it to this Streamlit UI.
-""")
-
-with st.expander("What you need to build", expanded=True):
-    st.markdown("""
-At minimum, your system should:
-- Represent pet care tasks (what needs to happen, how long it takes, priority)
-- Represent the pet and the owner (basic info and preferences)
-- Build a plan/schedule for a day that chooses and orders tasks based on constraints
-- Explain the plan (why each task was chosen and when it happens)
+Welcome to the PawPal+
 """)
 
 st.divider()
@@ -116,6 +94,7 @@ if st.session_state.owner is not None and len(st.session_state.owner.pets) > 0:
         priority = st.number_input(
             "Priority (1 = highest)", min_value=1, max_value=10, value=1
         )
+        preferred_time = st.text_input("Preferred time (HH:MM, optional)", value="")
         description = st.text_input("Description (optional)", value="")
         task_submitted = st.form_submit_button("Add task")
 
@@ -128,24 +107,33 @@ if st.session_state.owner is not None and len(st.session_state.owner.pets) > 0:
             pet=selected_pet,
             duration_hours=duration_hours,
             priority=int(priority),
+            preferred_time=preferred_time.strip(),
             description=description,
         )
         st.session_state.owner.add_task(task)
         st.success(f"Task '{task_name}' added.")
 
     if st.session_state.owner.tasks:
-        st.write("Current tasks:")
-        st.table(
-            [
-                {
-                    "Task": t.name,
-                    "Pet": t.pet.name,
-                    "Duration (h)": t.duration_hours,
-                    "Priority": t.priority,
-                }
-                for t in st.session_state.owner.tasks
-            ]
-        )
+        scheduler = Scheduler()
+        pending_tasks = scheduler.filter_completed_tasks(st.session_state.owner.tasks)
+        sorted_tasks = scheduler.sort_by_time(pending_tasks)
+
+        st.write(f"Current tasks ({len(sorted_tasks)} pending):")
+        if sorted_tasks:
+            st.table(
+                [
+                    {
+                        "Task": t.name,
+                        "Pet": t.pet.name,
+                        "Duration (h)": t.duration_hours,
+                        "Priority": t.priority,
+                        "Time": t.preferred_time or "—",
+                    }
+                    for t in sorted_tasks
+                ]
+            )
+        else:
+            st.info("All tasks are marked complete.")
 
 # --- Generate Schedule ---
 if st.session_state.owner is not None and len(st.session_state.owner.tasks) > 0:
@@ -168,13 +156,23 @@ if st.session_state.owner is not None and len(st.session_state.owner.tasks) > 0:
                         "Pet": t.pet.name,
                         "Duration (h)": t.duration_hours,
                         "Priority": t.priority,
+                        "Time": t.preferred_time or "—",
                     }
                     for i, t in enumerate(schedule.scheduled_tasks, start=1)
                 ]
             )
-            st.write(f"**Total: {schedule.total_duration_hours:.1f}h**")
+            st.success(
+                f"Schedule ready — {schedule.total_duration_hours:.1f}h across {len(schedule.scheduled_tasks)} task(s)."
+            )
         else:
             st.warning("No tasks could be scheduled within the given constraints.")
 
+        conflicts = Scheduler().detect_conflicts(schedule.scheduled_tasks)
+        for conflict in conflicts:
+            st.warning(
+                f"**Time conflict:** {conflict} — consider adjusting one of these tasks."
+            )
+
         if schedule.reasoning:
-            st.info(schedule.reasoning)
+            with st.expander("Scheduling reasoning", expanded=False):
+                st.info(schedule.reasoning)

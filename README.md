@@ -42,6 +42,20 @@ pip install -r requirements.txt
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
 
+## Features
+
+- **Priority-based scheduling** — tasks are sorted by priority (1 = highest) and greedily fitted into the owner's daily time budget
+- **Sorting by time** — tasks with a `preferred_time` (HH:MM) are ordered chronologically; tasks without a time appear last
+- **Conflict warnings** — tasks sharing the same preferred time are flagged in the schedule's reasoning output
+- **Group by pet** — optional preference to cluster tasks by pet while preserving priority order within each group
+- **Daily recurrence** — tasks marked `DAILY` or `WEEKLY` automatically generate a next-occurrence task with the correct due date on completion
+- **Explainable output** — every generated schedule includes a human-readable summary of what was scheduled, what was dropped, and why
+- **Task filtering** — filter tasks by completion status or by pet name
+
+## 📸 Demo
+
+![PawPal+ Streamlit App](demo.png)
+
 ## Smarter Scheduling
 
 The scheduler goes beyond basic task listing with several features:
