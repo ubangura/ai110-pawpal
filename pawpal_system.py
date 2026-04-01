@@ -148,9 +148,7 @@ class Scheduler:
                 dropped.append(task)
         return scheduled, dropped
 
-    def apply_ordering(
-        self, tasks: list[Task], preferences: Preferences
-    ) -> list[Task]:
+    def apply_ordering(self, tasks: list[Task], preferences: Preferences) -> list[Task]:
         """Apply preference-based ordering, then sort by preferred time."""
         ordered = tasks
         if preferences.group_tasks_by_pet:
@@ -196,7 +194,9 @@ class Scheduler:
         tasks = sorted(owner.tasks, key=lambda task: task.priority)
         tasks = tasks[: owner.constraints.max_tasks]
 
-        scheduled, dropped = self.fit_to_budget(tasks, owner.constraints.time_available_hours)
+        scheduled, dropped = self.fit_to_budget(
+            tasks, owner.constraints.time_available_hours
+        )
         scheduled = self.apply_ordering(scheduled, owner.preferences)
         total = sum(task.duration_hours for task in scheduled)
         reasoning = self.build_reasoning(owner, scheduled, dropped, total)

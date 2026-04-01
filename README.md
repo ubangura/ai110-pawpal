@@ -52,3 +52,27 @@ The scheduler goes beyond basic task listing with several features:
 - **Group by pet** — an optional preference that clusters tasks for the same pet together in the schedule.
 - **Recurring tasks** — tasks can be set to `DAILY` or `WEEKLY` frequency. When marked complete, `mark_complete()` returns a new task instance with the next due date calculated via `timedelta`.
 - **Explainable output** — every schedule includes a reasoning summary: what was scheduled, what was dropped and why, whether grouping was applied, and any detected conflicts.
+
+## Testing PawPal+
+
+### Running the tests
+
+```bash
+python -m pytest
+```
+
+### What the tests cover
+
+The test suite has 20 tests across five areas:
+
+- **Task lifecycle** — tasks start incomplete; `mark_complete()` sets `completed = True`.
+- **Recurring tasks** — daily and weekly tasks produce a new instance with the correct next due date; completing a `ONCE` task returns `None`; tasks with no due date fall back to `date.today()`; the returned next-occurrence task is independent of the original.
+- **Scheduling** — tasks are ordered by priority before time-fitting; tasks that exceed the time budget are dropped; the `max_tasks` cap excludes the lowest-priority tasks before any time-fitting occurs; an owner with zero time available gets an empty schedule.
+- **Conflict detection** — tasks sharing a `preferred_time` produce exactly one warning per slot; tasks with no preferred time are never flagged.
+- **Filtering** — completed tasks are removed by `filter_completed_tasks`; `filter_tasks_by_pet` returns only tasks for the named pet.
+
+### Confidence Level
+
+★★★★☆ (4 / 5)
+
+The core scheduling logic — priority ordering, time-budget enforcement, `max_tasks` cap, and recurring task generation — is fully covered and all 20 tests pass. One star is held back because the end-to-end `schedule()` calls with grouping preferences active are not covered.
