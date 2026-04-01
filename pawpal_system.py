@@ -89,7 +89,10 @@ class Scheduler:
         total_duration_hours = 0.0
         dropped_tasks = []
         for task in tasks:
-            if total_duration_hours + task.duration_hours <= constraints.time_available_hours:
+            if (
+                total_duration_hours + task.duration_hours
+                <= constraints.time_available_hours
+            ):
                 scheduled_tasks.append(task)
                 total_duration_hours += task.duration_hours
             else:
